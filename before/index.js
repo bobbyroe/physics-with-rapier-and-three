@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { getBody, getMouseBall } from "./getMeshes.js";
+import { getBody, getMouseBall, getLayer } from "./getMeshes.js";
 import RAPIER from 'https://cdn.skypack.dev/@dimforge/rapier3d-compat@0.11.2';
 import { EffectComposer } from "jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "jsm/postprocessing/RenderPass.js";
@@ -18,7 +18,7 @@ document.body.appendChild(renderer.domElement);
 
 let mousePos = new THREE.Vector2();
 
-const numBodies = 100;
+const numBodies = 1;
 const bodies = [];
 for (let i = 0; i < numBodies; i++) {
   const body = getBody();
@@ -30,7 +30,6 @@ const mouseBall = getMouseBall();
 scene.add(mouseBall.mesh);
 
 const hemiLight = new THREE.HemisphereLight(0x00bbff, 0xaa00ff);
-hemiLight.intensity = 0.2;
 scene.add(hemiLight);
 
 const sprites = getLayer({
