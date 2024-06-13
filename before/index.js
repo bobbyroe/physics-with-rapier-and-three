@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { getBody, getMouseBall, getLayer } from "./getMeshes.js";
+import { getBody, getMouseBall } from "./getMeshes.js";
+import { getLayer } from "./getLayer.js";
 import RAPIER from 'https://cdn.skypack.dev/@dimforge/rapier3d-compat@0.11.2';
 import { EffectComposer } from "jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "jsm/postprocessing/RenderPass.js";
@@ -35,7 +36,7 @@ scene.add(hemiLight);
 const sprites = getLayer({
   hue: 0.0,
   numSprites: 8,
-  opacity: 0.2, 
+  opacity: 0.02, 
   radius: 10,
   size: 24,
   z: -10.5,
