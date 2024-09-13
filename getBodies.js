@@ -28,7 +28,7 @@ function getBody(RAPIER, world) {
       wireframe: true
     });
     const wireMesh = new THREE.Mesh(geometry, wireMat);
-    wireMesh.scale.setScalar(1.001);
+    wireMesh.scale.setScalar(1.01);
     mesh.add(wireMesh);
     
     function update () {
