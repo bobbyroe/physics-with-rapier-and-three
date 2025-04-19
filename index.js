@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import { getBody, getMouseBall } from "./getBodies.js";
-import RAPIER from 'https://cdn.skypack.dev/@dimforge/rapier3d-compat@0.11.2';
-import { EffectComposer } from "jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "jsm/postprocessing/UnrealBloomPass.js";
+import RAPIER from 'rapier';
+import { UltraHDRLoader } from 'jsm/loaders/UltraHDRLoader.js';
+import { OrbitControls } from 'jsm/controls/OrbitControls.js';
 
 const w = window.innerWidth;
 const h = window.innerHeight;
 const scene = new THREE.Scene();
+scene.backgroundBlurriness = 0.1;
 const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
 camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -16,21 +16,19 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
-let mousePos = new THREE.Vector2();
+const ctrls = new OrbitControls(camera, renderer.domElement);
+ctrls.enableDamping = true;
+
+const hdrLoader = new UltraHDRLoader();
+hdrLoader.load('envs/san_giuseppe_bridge_2k.jpg', (hdr) => {
+  hdr.mapping = THREE.EquirectangularReflectionMapping;
+  scene.background = hdr;
+  scene.environment = hdr;
+});
 
 await RAPIER.init();
 const gravity = { x: 0.0, y: 0, z: 0.0 };
 const world = new RAPIER.World(gravity);
-
-// post-processing
-const renderScene = new RenderPass(scene, camera);
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 1.5, 0.4, 100);
-bloomPass.threshold = 0.005;
-bloomPass.strength = 2.0;
-bloomPass.radius = 0;
-const composer = new EffectComposer(renderer);
-composer.addPass(renderScene);
-composer.addPass(bloomPass);
 
 const numBodies = 100;
 const bodies = [];
@@ -47,14 +45,70 @@ const hemiLight = new THREE.HemisphereLight(0x00bbff, 0xaa00ff);
 hemiLight.intensity = 0.2;
 scene.add(hemiLight);
 
+const pointsGeo = new THREE.BufferGeometry();
+const pointsMat = new THREE.PointsMaterial({ 
+  size: 0.05, 
+  vertexColors: true
+});
+const points = new THREE.Points(pointsGeo, pointsMat);
+scene.add(points);
+
+function renderDebugView() {
+  const { vertices, colors } = world.debugRender();
+  pointsGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+  pointsGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+}
+
+// Mouse Interactivity
+const raycaster = new THREE.Raycaster();
+const pointerPos = new THREE.Vector2(0, 0);
+const mousePos = new THREE.Vector3(0, 0, 0);
+
+const mousePlaneGeo = new THREE.PlaneGeometry(48, 48, 48, 48);
+const mousePlaneMat = new THREE.MeshBasicMaterial({
+  wireframe: true,
+  color: 0x00ff00,
+  transparent: true,
+  opacity: 0.0
+});
+const mousePlane = new THREE.Mesh(mousePlaneGeo, mousePlaneMat);
+mousePlane.position.set(0, 0, 0.2);
+scene.add(mousePlane);
+
+
+window.addEventListener('mousemove', (evt) => {
+  pointerPos.set(
+    (evt.clientX / window.innerWidth) * 2 - 1,
+    -(evt.clientY / window.innerHeight) * 2 + 1
+  );
+});
+
+let cameraDirection = new THREE.Vector3();
+function handleRaycast() {
+  // orient the mouse plane to the camera
+  camera.getWorldDirection(cameraDirection);
+  cameraDirection.multiplyScalar(-1);
+  mousePlane.lookAt(cameraDirection);
+
+  raycaster.setFromCamera(pointerPos, camera);
+  const intersects = raycaster.intersectObjects(
+    [mousePlane],
+    false
+  );
+  if (intersects.length > 0) {
+    mousePos.copy(intersects[0].point);
+  }
+}
 
 function animate() {
   requestAnimationFrame(animate);
   world.step();
+  handleRaycast();
   mouseBall.update(mousePos);
+  ctrls.update();
+  // renderDebugView();
   bodies.forEach(b => b.update());
-  composer.render(scene, camera);
-  // controls.update();
+  renderer.render(scene, camera);
 }
 
 animate();
@@ -66,10 +120,5 @@ function handleWindowResize () {
 }
 window.addEventListener('resize', handleWindowResize, false);
 
-// mouse move handler
-function handleMouseMove (evt) {
-  mousePos.x = (evt.clientX / window.innerWidth) * 2 - 1;
-  mousePos.y = -(evt.clientY / window.innerHeight) * 2 + 1;
-}
-window.addEventListener('mousemove', handleMouseMove, false);
+
 
