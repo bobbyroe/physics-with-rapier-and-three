@@ -3,37 +3,53 @@ import * as THREE from "three";
 const sceneMiddle = new THREE.Vector3(0, 0, 0);
 // const colorPallete = [0x780000, 0xc1121f, 0xfdf0d5, 0x003049, 0x669bbc];
 const colorPallete = [0x0067b1, 0x4e99ce, 0x9bcbeb, 0x55d7e2, 0xffffff, 0x9ca9b2, 0x4e6676, 0xf69230, 0xf5d81f];
+
+// geos:
+const geometries = [
+  new THREE.SphereGeometry(1.0, 32, 32),
+  new THREE.BoxGeometry(1.0, 1.0, 1.0),
+  new THREE.IcosahedronGeometry(1.0, 8),
+  new THREE.ConeGeometry(1.0, 1, 8),
+  new THREE.CylinderGeometry(1.0, 1.0, 1, 64),
+  new THREE.TorusGeometry(1.0, 0.4, 16, 64),
+  new THREE.TorusKnotGeometry(1.0, 0.4, 128, 32),
+  new THREE.TetrahedronGeometry(1.0, 0),
+  new THREE.OctahedronGeometry(1.0, 0),
+  new THREE.DodecahedronGeometry(1.0),
+];
+
+function getGeometry(size) {
+  const randomGeo = geometries[Math.floor(Math.random() * geometries.length)];
+  const geo = randomGeo.clone();
+  geo.scale(size, size, size);
+  return geo;
+}
+    
 function getBody(RAPIER, world) {
-  const size = 0.1 + Math.random() * 0.25;
-  const range = 6;
+  const size = 0.25; // 0.1 + Math.random() * 0.25;
+  const range = 12;
   const density = size * 1.0;
   let x = Math.random() * range - range * 0.5;
   let y = Math.random() * range - range * 0.5 + 3;
   let z = Math.random() * range - range * 0.5;
-  // physics
-  let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
-    .setTranslation(x, y, z);
-  let rigid = world.createRigidBody(rigidBodyDesc);
-  let colliderDesc = RAPIER.ColliderDesc.ball(size).setDensity(density);
-  world.createCollider(colliderDesc, rigid);
-
+  
   let color = colorPallete[Math.floor(Math.random() * colorPallete.length)];
-  const geometry = new THREE.IcosahedronGeometry(size, 1);
+  const geometry = getGeometry(size);
   const material = new THREE.MeshPhysicalMaterial({
     color,
-    flatShading: true,
+    // flatShading: true,
     metalness: 1,
     roughness: 1,
   });
   const mesh = new THREE.Mesh(geometry, material);
 
-  // const wireMat = new THREE.MeshBasicMaterial({
-  //   color: 0xffffff,
-  //   wireframe: true
-  // });
-  // const wireMesh = new THREE.Mesh(geometry, wireMat);
-  // wireMesh.scale.setScalar(1.01);
-  // mesh.add(wireMesh);
+  // physics
+  let rigidBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+    .setTranslation(x, y, z);
+  let rigid = world.createRigidBody(rigidBodyDesc);
+  let points = geometry.attributes.position.array;
+  let colliderDesc = RAPIER.ColliderDesc.convexHull(points).setDensity(density);
+  world.createCollider(colliderDesc, rigid);
 
   function update() {
     rigid.resetForces(true);
@@ -56,9 +72,7 @@ function getMouseBall(RAPIER, world) {
     color: 0xffffff,
     emissive: 0xffffff,
   });
-  const mouseLight = new THREE.PointLight(0xffffff, 1);
   const mouseMesh = new THREE.Mesh(geometry, material);
-  // mouseMesh.add(mouseLight);
   // RIGID BODY
   let bodyDesc = RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(0, 0, 0)
   let mouseRigid = world.createRigidBody(bodyDesc);

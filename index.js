@@ -47,7 +47,7 @@ scene.add(hemiLight);
 
 const pointsGeo = new THREE.BufferGeometry();
 const pointsMat = new THREE.PointsMaterial({ 
-  size: 0.05, 
+  size: 0.035, 
   vertexColors: true
 });
 const points = new THREE.Points(pointsGeo, pointsMat);
