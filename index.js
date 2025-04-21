@@ -3,11 +3,11 @@ import { getBody, getMouseBall } from "./getBodies.js";
 import RAPIER from 'rapier';
 import { UltraHDRLoader } from 'jsm/loaders/UltraHDRLoader.js';
 import { OrbitControls } from 'jsm/controls/OrbitControls.js';
-
+import getLayer from "./getLayer.js";
 const w = window.innerWidth;
 const h = window.innerHeight;
 const scene = new THREE.Scene();
-scene.backgroundBlurriness = 0.1;
+// scene.backgroundBlurriness = 0.1;
 const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
 camera.position.z = 5;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -22,7 +22,7 @@ ctrls.enableDamping = true;
 const hdrLoader = new UltraHDRLoader();
 hdrLoader.load('envs/san_giuseppe_bridge_2k.jpg', (hdr) => {
   hdr.mapping = THREE.EquirectangularReflectionMapping;
-  scene.background = hdr;
+  // scene.background = hdr;
   scene.environment = hdr;
 });
 
@@ -44,6 +44,17 @@ scene.add(mouseBall.mesh);
 const hemiLight = new THREE.HemisphereLight(0x00bbff, 0xaa00ff);
 hemiLight.intensity = 0.2;
 scene.add(hemiLight);
+
+// Sprites BG
+const gradientBackground = getLayer({
+  hue: 0.6,
+  numSprites: 8,
+  opacity: 0.2,
+  radius: 10,
+  size: 24,
+  z: -10.5,
+});
+scene.add(gradientBackground);
 
 const pointsGeo = new THREE.BufferGeometry();
 const pointsMat = new THREE.PointsMaterial({ 
