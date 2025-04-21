@@ -19,7 +19,7 @@ function getSprite({ hasFog, color, opacity, path, pos, size }) {
   return sprite;
 }
 
-function getLayer({
+function getGradientBackground({
   hasFog = true,
   hue = 0.56,
   numSprites = 8,
