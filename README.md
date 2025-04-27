@@ -2,7 +2,7 @@
 
 Welcome! 👋  
 This project is the codebase behind the YouTube video:  
-🎥 **[Three.js Project: Variations on Physics](#)**
+🎥 **[Three.js Project: Variations on Physics](https://youtu.be/vi2ud9LNkpA)**
 
 In this project, we combine **Three.js** real-time 3D rendering with **Rapier Physics** to create interactive, an animated 3D physics experiment.  
 
@@ -76,7 +76,7 @@ In this project, we combine **Three.js** real-time 3D rendering with **Rapier Ph
 ---
 
 ## 📺 Watch the Tutorial
-👉 [Watch the Full YouTube Video Here!](#)
+👉 [Watch the Full YouTube Video Here!](https://youtu.be/vi2ud9LNkpA)
 
 ---
 
